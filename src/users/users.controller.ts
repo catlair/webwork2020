@@ -1,57 +1,112 @@
-import {Body, Controller, Delete, Get, Param, Post, Put, UseFilters} from '@nestjs/common';
-import {UsersService} from "./users.service";
-import {ApiOperation, ApiTags} from "@nestjs/swagger";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put, UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
+import { UsersService } from './users.service';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 // import {UniqueExceptionFilter} from "../unique.filter";
-import {CreateUserDto} from "./dto/create-user.dto";
-import {UpdateUserDto} from "./dto/update-user.dto";
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { User } from './users.decorator';
+import { AuthGuard } from '@nestjs/passport';
+import { JwtService } from '@nestjs/jwt';
+import { LoginDto } from './dto/login.dto';
+
 
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
-
-  constructor(private readonly userService: UsersService
+  constructor(
+    private readonly userService: UsersService,
+    private readonly jwtService: JwtService,
   ) {
   }
 
   @Get('')
-  @ApiOperation({summary: '获取所有用户信息'})
-  async findAll() {
-    return await this.userService.findAll();
+  @ApiOperation({ summary: '获取所有用户信息' })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  async findAll(@User() user) {
+    if (user.user_id === 1) {
+      return await this.userService.findAll();
+    }
+    throw new UnauthorizedException();;
   }
 
   @Get(':id')
-  @ApiOperation({summary: '通过id获取一个用户的信息'})
-  async findOneById(@Param('id')
-                      id: number
+  @ApiOperation({ summary: '通过id获取一个用户的信息' })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  async findOneById(
+    @Param('id')
+      id: number,
+    @User() user,
   ) {
-    return this.userService.findOneById(id)
+    if (user.user_id === 1 || user.user_id === +id) {
+      return await this.userService.findOneById(id);
+    }
+    throw new UnauthorizedException();;
   }
 
   @Put(':id')
-  @ApiOperation({summary: '更新一个用户的信息'})
+  @ApiOperation({ summary: '更新一个用户的信息' })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
   async update(
     @Param('id')
       id: number,
     @Body()
-      updateUserDto: UpdateUserDto
+      updateUserDto: UpdateUserDto,
+    @User() user,
   ) {
-    return this.userService.update(id, updateUserDto);
+    if (user.user_id === 1 || user.user_id === +id) {
+      return await this.userService.update(id, updateUserDto);
+    }
+    throw new UnauthorizedException();
   }
 
   @Delete(':id')
-  @ApiOperation({summary: '删除一个用户'})
-  async remove(@Param('id')
-                 id: number
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '删除一个用户' })
+  async remove(
+    @Param('id')
+      id: number,
+    @User() user,
   ) {
-    return this.userService.remove(id);
+    if (user.user_id === 1 || user.user_id === +id) {
+      return this.userService.remove(id);
+    }
+    throw new UnauthorizedException();
   }
 
   @Post('')
   // @UseFilters(UniqueExceptionFilter) //处理名字重复的报错
-  @ApiOperation({summary: '创建一个用户'})
-  async create(@Body() createUserDto: CreateUserDto
-  ) {
+  @ApiOperation({ summary: '创建一个用户' })
+  async create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
   }
 
+  @Post('login')
+  @UseGuards(AuthGuard('local'))
+  @ApiOperation({ summary: '登录' })
+  // 使用上面的local策略后,返回的user会在req中
+  //@User是自定义的,返回req.user
+  login(@Body() loginDto: LoginDto, @User() user) {
+    const username = user.username;
+    const token = this.jwtService.sign({
+      user_id: user.user_id,
+    });
+    return {
+      user_id: user.user_id,
+      username,
+      token,
+    };
+  }
 }
