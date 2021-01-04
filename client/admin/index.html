@@ -1,0 +1,623 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>后台管理面板</title>
+  <script src="../js/vue.js"></script>
+  <script src="../js/element.js"></script>
+  <script src="../js/axios.js"></script>
+  <script src="../js/axios/index.js"></script>
+  <script src="../js/vue-router.min.js"></script>
+  <link rel="stylesheet" href="../css/element.css">
+  <style>
+      body, html {
+          margin: 0;
+          font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+      }
+
+      .el-header {
+          background-color: #B3C0D1;
+          color: #333;
+          line-height: 60px;
+      }
+
+      .el-aside {
+          color: #333;
+      }
+
+  </style>
+</head>
+<body>
+<div id="app">
+  <el-container style="height: 100vh; border: 1px solid #eee">
+    <el-aside width="200px" style="background-color: rgb(238, 241, 246)">
+      <el-menu :default-openeds="['1', '2']">
+        <el-submenu index="1">
+          <template slot="title"><i class="el-icon-user-solid"></i>用户中心</template>
+          <el-menu-item index="1-1" @click="$router.push('/users/')">用户列表</el-menu-item>
+          <el-menu-item index="1-2" @click="$router.push('/users/add')">添加用户</el-menu-item>
+        </el-submenu>
+        <div>
+          <el-submenu index="2">
+            <template slot="title"><i class="el-icon-menu"></i>评论管理</template>
+            <el-menu-item-group>
+              <el-menu-item index="2-1" @click="$router.push('/comments')">评论列表</el-menu-item>
+            </el-menu-item-group>
+          </el-submenu>
+        </div>
+      </el-menu>
+    </el-aside>
+
+    <el-container>
+      <el-header style="text-align: right; font-size: 18px">
+        <el-dropdown>
+          <i class="el-icon-setting" style="margin-right: 15px"></i>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item @click.native="logOut">退出登录</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
+        <span>{{username}}</span>
+      </el-header>
+      <router-view></router-view>
+    </el-container>
+  </el-container>
+</div>
+<template id="user-list">
+  <el-main>
+    <el-table :data="users">
+      <el-table-column prop="user_id" label="用户id" width="120">
+      </el-table-column>
+      <el-table-column prop="username" label="用户名" width="140">
+      </el-table-column>
+      <el-table-column prop="birthday" label="生日" width="140">
+      </el-table-column>
+      <el-table-column prop="email" label="邮箱" width="140">
+      </el-table-column>
+      <el-table-column prop="address" label="地址" width="300">
+      </el-table-column>
+      <el-table-column label="操作" fixed="right">
+        <template slot-scope="scope">
+          <el-button
+                  size="mini"
+                  @click="handleEdit(scope.$index, scope.row)">编辑
+          </el-button>
+          <el-button
+                  size="mini"
+                  type="danger"
+                  :disabled="scope.row['user_id'] === 1"
+                  @click="handleDelete(scope.$index, scope.row)">删除
+          </el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+  </el-main>
+</template>
+<template id="user-create">
+  <el-form :model="user" :rules="rules" ref="ruleForm" label-width="100px" style="margin-top:50px"
+           class="demo-ruleForm" status-icon>
+    <el-form-item label="用户名" prop="username" required>
+      <el-input v-model="user.username" style="width:400px;"></el-input>
+    </el-form-item>
+    <el-form-item label="密码" prop="password" required>
+      <el-input type="password" v-model="user.password" style="width:400px;">
+      </el-input>
+    </el-form-item>
+    <el-form-item label="确认密码" prop="rPassword" required>
+      <el-input type="password" v-model="user.rPassword" style="width:400px;">
+      </el-input>
+    </el-form-item>
+    <el-form-item label="生日" required>
+      <el-col :span="11">
+        <el-form-item prop="birthday">
+          <el-date-picker type="date" value-format="yyyy-MM-dd" format="yyyy-MM-dd" placeholder="选择日期"
+                          v-model="user.birthday" style="width:400px;"></el-date-picker>
+        </el-form-item>
+      </el-col>
+    </el-form-item>
+    <el-form-item label="邮箱" prop="email" required>
+      <el-input v-model="user.email" style="width:400px;"></el-input>
+    </el-form-item>
+    <el-form-item label="住址" prop="address" required>
+      <el-input v-model="user.address" style="width:400px;"></el-input>
+    </el-form-item>
+    <el-form-item>
+      <el-button type="primary" @click="submitForm('ruleForm')">立即创建</el-button>
+      <el-button @click="resetForm('ruleForm')">重置</el-button>
+      <el-button @click="fillingForm">填充</el-button>
+    </el-form-item>
+  </el-form>
+</template>
+<template id="user-edit">
+  <el-form :model="user" :rules="rules" ref="ruleForm" label-width="100px" style="margin-top: 10px"
+           class="demo-ruleForm" status-icon>
+    <el-form-item>
+      <el-tag>{{$route.params.id}}</el-tag>
+      <el-tag type="success" v-if="user.username">{{user.username}}</el-tag>
+    </el-form-item>
+    <el-form-item label="密码" prop="password">
+      <el-input type="password" v-model="user.password" style="width:400px;">
+      </el-input>
+    </el-form-item>
+    <el-form-item label="确认密码" prop="rPassword">
+      <el-input type="password" v-model="user.rPassword" style="width:400px;">
+      </el-input>
+    </el-form-item>
+    <el-form-item label="生日">
+      <el-col :span="11">
+        <el-form-item prop="birthday">
+          <el-date-picker type="date" value-format="yyyy-MM-dd" format="yyyy-MM-dd" placeholder="选择日期"
+                          v-model="user.birthday" style="width:400px;"></el-date-picker>
+        </el-form-item>
+      </el-col>
+    </el-form-item>
+    <el-form-item label="邮箱" prop="email">
+      <el-input v-model="user.email" style="width:400px;"></el-input>
+    </el-form-item>
+    <el-form-item label="住址" prop="address">
+      <el-input v-model="user.address" style="width:400px;"></el-input>
+    </el-form-item>
+    <el-form-item>
+      <el-button type="primary" @click="submitForm('ruleForm')">立即更新</el-button>
+      <el-button @click="resetForm('ruleForm')">重置</el-button>
+    </el-form-item>
+  </el-form>
+</template>
+<template id="comment-list">
+  <div class="" style="margin: 10px 0 0 20px">
+    <div class="container">
+      <el-tabs v-model="message">
+        <el-tab-pane :label="`未审核评论(${notVerifyCom.length})`" name="first">
+          <el-table :data="notVerifyCom" :show-header="false" style="width: 100%">
+            <el-table-column prop="username" width="120">
+              <template slot-scope="scope">
+                <span style="font-size: 12px;" class="message-username">{{scope.row.user.username}}</span>
+              </template>
+            </el-table-column>
+            <el-table-column>
+              <template slot-scope="scope">
+                <span class="message-title">{{scope.row.content}}</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="date" width="200">
+              <template slot-scope="scope">
+                <span class="message-data">{{scope.row.created_time}}</span>
+              </template>
+            </el-table-column>
+            <el-table-column width="80">
+              <template slot-scope="scope">
+                <el-button size="small" @click="handleVerify(scope.$index,scope.row)">审核</el-button>
+              </template>
+            </el-table-column>
+            <el-table-column width="80">
+              <template slot-scope="scope">
+                <el-button size="small" type="danger" @click="handleDel(scope.$index,scope.row)">删除</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+          <!--          <div class="handle-row">-->
+          <!--            <el-button type="primary">全部标为已审核</el-button>-->
+          <!--          </div>-->
+        </el-tab-pane>
+
+        <el-tab-pane :label="`已审核评论(${verifyCom.length})`" name="second">
+          <template v-if="message === 'second'">
+            <el-table :data="verifyCom" :show-header="false" style="width: 100%">
+              <el-table-column prop="username" width="120">
+                <template slot-scope="scope">
+                  <span style="font-size: 12px;" class="message-username">{{scope.row.user.username}}</span>
+                </template>
+              </el-table-column>
+              <el-table-column>
+                <template slot-scope="scope">
+                  <span class="message-title">{{scope.row.content}}</span>
+                </template>
+              </el-table-column>
+              <el-table-column prop="date" width="200">
+                <template slot-scope="scope">
+                  <span class="message-data">{{scope.row.created_time}}</span>
+                </template>
+              </el-table-column>
+              <el-table-column width="120">
+                <template slot-scope="scope">
+                  <el-button size="small" type="danger" @click="handleDel(scope.$index,scope.row)">删除</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+          </template>
+        </el-tab-pane>
+
+        <el-tab-pane :label="`全部评论(${comments.length})`" name="third">
+          <template v-if="message === 'third'">
+            <el-table :data="comments" :show-header="false" style="width: 100%">
+              <el-table-column prop="username" width="120">
+                <template slot-scope="scope">
+                  <span style="font-size: 12px;" class="message-username">{{scope.row.user.username}}</span>
+                </template>
+              </el-table-column>
+              <el-table-column>
+                <template slot-scope="scope">
+                  <span :style="!scope.row.isVerify ? {color:'#ff7675'} : {color:'#0984e3'}"
+                        class="message-title">{{scope.row.content}}</span>
+                </template>
+              </el-table-column>
+              <el-table-column prop="date" width="200">
+                <template slot-scope="scope">
+                  <span class="message-data">{{scope.row.created_time}}</span>
+                </template>
+              </el-table-column>
+              <el-table-column width="80">
+                <template slot-scope="scope">
+                  <el-button :disabled="scope.row.isVerify" size="small" @click="handleVerify(scope.$index,scope.row)">
+                    审核
+                  </el-button>
+                </template>
+              </el-table-column>
+              <el-table-column width="80">
+                <template slot-scope="scope">
+                  <el-button size="small" type="danger" @click="handleDel(scope.$index,scope.row)">删除</el-button>
+                </template>
+              </el-table-column>
+
+            </el-table>
+          </template>
+        </el-tab-pane>
+      </el-tabs>
+    </div>
+  </div>
+</template>
+
+<script>
+    const token = window.localStorage.getItem('token');
+    if (!token?.includes('.')) {
+        window.location.href = "./login.html"
+    }
+    const originalPush = VueRouter.prototype.push
+    VueRouter.prototype.push = function push(location) {
+        return originalPush.call(this, location).catch(err => err)
+    }
+</script>
+<script>
+    const UserList = {
+        template: '#user-list',
+        data() {
+            return {
+                users: []
+            }
+        },
+        async mounted() {
+            this.fetchUser();
+        },
+        methods: {
+            async fetchUser() {
+                try {
+                    this.$data.users = await _axios.get('/users')
+                } catch (err) {
+                }
+            },
+            handleEdit(index, row) {
+                this.$router.push(`/users/${row['user_id']}/edit`);
+            },
+            handleDelete(index, row) {
+                this.$confirm('此操作将永久删除该用户, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(async () => {
+                    try {
+                        await _axios.delete(`/users/${row['user_id']}`);
+                        await this.fetchUser();
+                    } catch (err) {
+                        this.$message({
+                            type: 'error',
+                            message: err.response?.data?.message || '删除失败'
+                        });
+                        return;
+                    }
+                    this.$message({
+                        type: 'success',
+                        message: '删除成功!'
+                    });
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });
+                });
+            }
+        }
+    }
+    const UserCreate = {
+        template: '#user-create',
+        data() {
+            const validatePass2 = (rule, value, callback) => {
+                if (value === '') {
+                    callback(new Error('请再次输入密码'));
+                } else if (value !== this.user.password) {
+                    callback(new Error('两次输入密码不一致!'));
+                } else {
+                    callback();
+                }
+            }
+            return {
+                user: {
+                    username: 'user',
+                    password: '123456',
+                    rPassword: '123456',
+                    birthday: '2000-01-01',
+                    email: 'demo@qq.com',
+                    address: '重庆永川',
+                },
+                rules: {
+                    username: [
+                        {required: true, message: '请输入用户名', trigger: 'blur'},
+                        {min: 2, max: 18, message: '长度在 2 到 18 个字符', trigger: 'blur'}
+                    ],
+                    password: [
+                        {type: 'string', required: true, message: '请输入密码', trigger: 'blur'},
+                        {min: 6, max: 18, message: '长度在 6 到 18 个字符', trigger: 'blur'}
+                    ],
+                    email: [
+                        {type: 'email', required: true, message: '请输入邮箱', trigger: 'blur'}
+                    ],
+                    birthday: [
+                        {type: 'string', required: true, message: '请选择时间', trigger: 'change'}
+                    ],
+                    address: [
+                        {type: 'string', required: true, message: '请输入地址', trigger: 'blur'}
+                    ],
+                    rPassword: [
+                        {type: 'string', required: true, message: '请再次输入密码', trigger: 'blur'},
+                        {min: 6, max: 18, message: '长度在 6 到 18 个字符', trigger: 'blur'},
+                        {validator: validatePass2, trigger: 'blur'}
+                    ]
+                }
+            };
+        },
+        methods: {
+            submitForm(formName) {
+                this.$refs[formName].validate(async (valid) => {
+                    if (valid) {
+                        try {
+                            await _axios.post('/users', this.user);
+                            this.$message.success('创建成功');
+                            router.push('/');
+                        } catch (error) {
+                            this.$message.error(error?.response?.data?.message);
+                        }
+                    } else {
+                        console.log('error submit!!');
+                        this.$message.error('请完成表格');
+                        return false;
+                    }
+                });
+            },
+            resetForm(formName) {
+                this.reset();
+                this.$refs[formName].resetFields();
+            },
+            reset() {
+                this.user = {
+                    username: '',
+                    password: '',
+                    rPassword: '',
+                    birthday: '',
+                    email: '',
+                    address: '',
+                }
+            },
+            fillingForm() {
+                this.user = {
+                    username: 'user',
+                    password: '123456',
+                    rPassword: '123456',
+                    birthday: '2000-01-01',
+                    email: 'demo@qq.com',
+                    address: '重庆永川',
+                }
+            }
+        }
+    }
+    const UserEdit = {
+        template: '#user-edit',
+        data() {
+            const validatePass2 = (rule, value, callback) => {
+                if (value !== this.user.password) {
+                    callback(new Error('两次输入密码不一致!'));
+                } else {
+                    callback();
+                }
+            }
+            return {
+                user: {
+                    username: '',
+                    password: '',
+                    rPassword: '',
+                    birthday: '',
+                    email: '',
+                    address: '',
+                },
+                rules: {
+                    password: [
+                        {type: 'string', required: false, message: '请输入密码', trigger: 'blur'},
+                        {min: 6, max: 18, message: '长度在 6 到 18 个字符', trigger: 'blur'}
+                    ],
+                    email: [
+                        {type: 'email', required: false, message: '请输入邮箱', trigger: 'blur'}
+                    ],
+                    birthday: [
+                        {type: 'string', required: false, message: '请选择时间', trigger: 'change'}
+                    ],
+                    address: [
+                        {type: 'string', required: false, message: '请输入地址', trigger: 'blur'}
+                    ],
+                    rPassword: [
+                        {type: 'string', required: false, message: '请再次输入密码', trigger: 'blur'},
+                        {min: 6, max: 18, message: '长度在 6 到 18 个字符', trigger: 'blur'},
+                        {validator: validatePass2, trigger: 'blur'}
+                    ]
+                }
+            };
+        },
+        async created() {
+            const user = await _axios.get(`/users/${this.$route.params.id}`);
+            this.user = {...this.user, ...user}
+        },
+        methods: {
+            submitForm(formName) {
+                this.$refs[formName].validate(async (valid) => {
+                    if (valid) {
+                        try {
+                            const data = this.deleteProp(this.user);
+
+                            if (data.password === undefined && data.email === undefined && data.address === undefined && data.birthday === undefined) {
+                                this.$message.warning('没有需要更新的内容');
+                                return false;
+                            }
+                            await _axios.put(`/users/${this.$route.params.id}`, data);
+                            this.$message.success('更新成功');
+                            router.push('/');
+                        } catch (error) {
+                            this.$message.error(error?.response?.data?.message);
+                        }
+                    } else {
+                        console.log('error submit!!');
+                        this.$message.error('请完成表格');
+                        return false;
+                    }
+                });
+            },
+            resetForm(formName) {
+                this.$refs[formName].resetFields();
+            },
+            deleteProp(obj) {
+                for (const key in obj) {
+                    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+                        if (obj[key] === '') delete obj[key];
+                    }
+                }
+                if (obj.rPassword) delete obj.rPassword;
+                return obj;
+            }
+        }
+    }
+    const CommentList = {
+        template: '#comment-list',
+        data() {
+            return {
+                message: 'first',
+                showHeader: false,
+                comments: [{
+                    "id": "asds",
+                    "created_time": "2021-01-03T07:21:21.006Z",
+                    "content": "测试内考理综蓝色的海好可怜回来睡觉打款发货和你说的好好封了可收到回复火蓝刀锋容",
+                    "isVerify": 1,
+                    "user_id": 1,
+                    "user": {
+                        "user_id": 1,
+                        "username": "用户名",
+                    }
+                }, {
+                    "id": "asd",
+                    "created_time": "2021-01-03T08:21:21.006Z",
+                    "content": "测试内容2222",
+                    "isVerify": 0,
+                    "user_id": 1,
+                    "user": {
+                        "user_id": 1,
+                        "username": "用户名",
+                    }
+                }]
+            }
+        },
+        created() {
+            this.fetchAllComments();
+        },
+        methods: {
+            async handleVerify(index, row) {
+                try {
+                    await _axios.put(`/comments/${row.id}`);
+                    this.$message.success('评论审核完成')
+                    await this.fetchAllComments();
+                } catch (error) {
+                    this.$message.error(error?.response?.data?.message);
+                }
+            },
+            async handleDel(index, row) {
+                this.$confirm('此操作将永久删除该评论, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(async () => {
+                    try {
+                        await _axios.delete(`/comments/${row.id}`);
+                        this.$message.success('评论删除成功')
+                        await this.fetchAllComments();
+                    } catch (error) {
+                        this.$message.error(error?.response?.data?.message);
+                    }
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });
+                });
+            },
+            async fetchAllComments() {
+                this.comments = await _axios.get('/comments');
+            }
+        },
+        computed: {
+            verifyCom() {
+                return this.comments.filter(el => el['isVerify'])
+            },
+            notVerifyCom() {
+                return this.comments.filter(el => !el['isVerify'])
+            }
+        }
+    }
+</script>
+<script>
+
+    const routes = [
+        {
+            path: '/', redirect: '/users/'
+        },
+        {
+            path: '/users/', component: UserList
+        },
+        {
+            path: '/users/add', component: UserCreate
+        },
+        {
+            path: '/users/:id/edit', component: UserEdit
+        },
+        {
+            path: '/comments/', component: CommentList
+        }
+    ]
+
+    const router = new VueRouter({routes})
+    new Vue({
+        el: '#app',
+        router,
+        data() {
+            return {
+                username: '',
+            }
+        },
+        mounted() {
+            this.$data.username = window.localStorage.getItem('ms_username') || '';
+        },
+        methods: {
+            logOut() {
+                window.localStorage.clear()
+                window.location.href = "./"
+            },
+        }
+    })
+</script>
+</body>
+</html>

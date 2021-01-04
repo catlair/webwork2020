@@ -1,0 +1,115 @@
+<!doctype html>
+<html class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+  <meta name="viewport" content="width=device-width,user-scalable=no, initial-scale=1">
+  <link rel="icon" type="image/png" href="/favicon.ico">
+  <title>科学养生网</title>
+  <link rel="stylesheet" href="css/swiper.min.css">
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/app_web.css">
+
+  <script type="text/javascript" src="js/jquery1.12.4.min.js"></script>
+  <script type="text/javascript" src="js/jquery.SuperSlide.2.1.3.js"></script>
+  <script type="text/javascript" src="js/swiper.min.js"></script>
+  <script type="text/javascript" src="js/bootstrap.min.js"></script>
+  <script src="js/vue.js"></script>
+</head>
+
+<body>
+<!--头部  -->
+<div class="header-wrap">
+  <common-header></common-header>
+</div>
+<div class="knag_top"></div>
+<!-- banner -->
+<div class="shouye_qiehuant">
+  <div class="swiper-wrapper">
+    <div class="swiper-slide"><a href="#"><img src="images/banner_ge.jpg" alt=""></a></div>
+  </div>
+  <!-- Add Pagination -->
+  <div class="swiper-pagination"></div>
+</div>
+<!-- Initialize Swiper -->
+<script>
+    var swiper = new Swiper('.shouye_qiehuant', {
+        pagination: {
+            el: '.swiper-pagination',
+        },
+    });
+</script>
+<!-- 子页 -->
+<div class="kuang_ping_nwes">
+  <div class="px1200 nimen_news">
+    <!--  -->
+    <div class="news_list_ziye">
+      <ul>
+        <li>
+          <a href="ydys_xq.html"><img src="images/news_img1.jpg" alt=""></a>
+          <div class="text">
+            <a href="ydys_xq.html"><h2>运动扫盲进行时 出汗非减脂</h2></a>
+            <p>
+              如果你的减肥知识还停留在一个这样的阶段：相当然的认为在运动减肥过程中，出汗的多少决定着一个人的减肥效果!那么你是不会利用运动减肥成功的!这个时候的你已经陷入了一个运动减肥误区!因为科学验证，运动减肥效果并不是以出汗多少来定的!一些盲目的挥汗如雨的运动，不仅仅不会帮助你减肥，却能伤害到你的身体!这是为什么呢?
+            </p>
+            <a href="ydys_xq.html" class="xiangq">查看详情>></a>
+          </div>
+        </li>
+        <li>
+          <a href="ydys_xq.html"><img src="images/news_img2.jpg" alt=""></a>
+          <div class="text">
+            <a href="ydys_xq.html"><h2>打太极拳的好处有哪些？ 太极拳对身体有什么益处？</h2></a>
+            <p>
+              运动的方式有很多种，现在很多人都喜欢去健身房内运动，因为又专业的器材，而且在室内不用担心一些天气冷暖的问题，但是老年人可能并不太适合健身房内的一些运动，经常去广场等地方的人，可能可以看到，有很多老年人会在休闲的区域打太极，太极拳，是中华的传统文化运动，而且太极拳的种类也是十分的多的，只是现在打太极拳的人越来越少了，到底太极拳有哪些好处呢?
+            </p>
+            <a href="ydys_xq.html" class="xiangq">查看详情>></a>
+          </div>
+        </li>
+        <li>
+          <a href="ydys_xq.html"><img src="images/news_img3.jpg" alt=""></a>
+          <div class="text">
+            <a href="ydys_xq.html"><h2>湿气重怎么办 坚持适量的运动能缓解这个问题</h2></a>
+            <p>
+              　湿气重的问题长期以来困扰着很多人，特别是很多体型偏胖的人，实际上是湿气导致的水肿。湿气重怎么办?想要解决这个问题，我们应该首先了解湿气重的表现有哪些。生活中如果能常吃某些食物，可以帮助去湿气，湿气重吃什么?一起来看!
+            </p>
+            <a href="ydys_xq.html" class="xiangq">查看详情>></a>
+          </div>
+        </li>
+        <li>
+          <a href="ydys_xq.html"><img src="images/news_img4.jpg" alt=""></a>
+          <div class="text">
+            <a href="ydys_xq.html"><h2>免疫力低怎么办 经常做运动有这个作用</h2></a>
+            <p>
+              湿气重的问题长期以来困扰着很多人，特别是很多体型偏胖的人，实际上是湿气导致的水肿。湿气重怎么办?想要解决这个问题，我们应该首先了解湿气重的表现有哪些。生活中如果能常吃某些食物，可以帮助去湿气，湿气重吃什么?一起来看!
+            </p>
+            <a href="ydys_xq.html" class="xiangq">查看详情>></a>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+<!-- footer -->
+<div class="footer-wrap">
+  <common-footer></common-footer>
+</div>
+<script src="common/index.js"></script>
+<script>
+    new Vue({el: '.header-wrap'})
+    new Vue({el: '.footer-wrap'})
+
+    const aYdysXq = document.querySelectorAll('a[href="ydys_xq.html"]');
+    const title = document.querySelectorAll('h2');
+    Array.from(aYdysXq).forEach((el, index) => {
+        const i = Math.floor(index / 3);
+        el.addEventListener('click', (e) => {
+            window.sessionStorage.setItem('title_index',(i > 3 ? 3 : i).toString());
+        })
+    })
+</script>
+
+</body>
+</html>
