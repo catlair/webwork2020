@@ -36,7 +36,7 @@ export class UsersController {
     if (user.user_id === 1) {
       return await this.userService.findAll();
     }
-    throw new UnauthorizedException();;
+    throw new UnauthorizedException('没有权限操作');
   }
 
   @Get(':id')
@@ -51,7 +51,7 @@ export class UsersController {
     if (user.user_id === 1 || user.user_id === +id) {
       return await this.userService.findOneById(id);
     }
-    throw new UnauthorizedException();;
+    throw new UnauthorizedException('没有权限操作');
   }
 
   @Put(':id')
@@ -66,9 +66,9 @@ export class UsersController {
     @User() user,
   ) {
     if (user.user_id === 1 || user.user_id === +id) {
-      return await this.userService.update(id, updateUserDto);
+      return await this.userService.update(id, updateUserDto, user.user_id);
     }
-    throw new UnauthorizedException();
+    throw new UnauthorizedException('没有权限操作');
   }
 
   @Delete(':id')
@@ -83,7 +83,7 @@ export class UsersController {
     if (user.user_id === 1 || user.user_id === +id) {
       return this.userService.remove(id);
     }
-    throw new UnauthorizedException();
+    throw new UnauthorizedException('没有权限操作');
   }
 
   @Post('')
@@ -91,6 +91,14 @@ export class UsersController {
   @ApiOperation({ summary: '创建一个用户' })
   async create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
+  }
+
+  @Post('auth')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '校验token是否有效' })
+  async authToken() {
+    return true;
   }
 
   @Post('login')

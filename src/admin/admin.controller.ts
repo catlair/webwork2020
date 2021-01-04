@@ -16,10 +16,9 @@ export class AdminController {
 
   @Post('login')
   @UseGuards(AuthGuard('local'))
-  @ApiBearerAuth()
   @ApiOperation({ summary: '管理员登录' })
   async login(
-    @Body() loginDto: LoginDto, @User() user
+    @Body() loginDto: LoginDto, @User() user,
   ) {
     if (user.user_id === 1) {
       const username = user.username;
@@ -32,6 +31,16 @@ export class AdminController {
         token,
       };
     }
+    throw new UnauthorizedException('该账号不是管理员');
+  }
+
+  @Post('auth')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '校验token是否有效' })
+  async authToken(@User() user) {
+    if (user.user_id === 1)
+      return true;
     throw new UnauthorizedException('该账号不是管理员');
   }
 }

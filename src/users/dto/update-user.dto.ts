@@ -1,13 +1,16 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { CreateUserDto } from './create-user.dto';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsEmpty, IsString, Length} from 'class-validator';
+import { IsEmail, IsString, Length } from 'class-validator';
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {
-  @ApiProperty({ description: '用户密码', example: '123456' })
+  @ApiProperty({ description: '用户新密码', example: '123456' })
   @IsString()
   @Length(6, 18, { message: '密码长度为6-18' })
   password: string;
+
+  @ApiProperty({ description: '用户原密码', example: '123456' })
+  oPassword?: string;
 
   @ApiProperty({ description: '用户邮箱', example: 'demo@qq.com' })
   @IsEmail()

@@ -1,6 +1,7 @@
 import { IsEmail, IsNotEmpty } from 'class-validator';
-import { Entity, Column, PrimaryGeneratedColumn, PrimaryColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, PrimaryColumn, OneToMany } from 'typeorm';
 import { Exclude } from 'class-transformer';
+import { CommentsEntity } from '../../comments/entities/comments.entity';
 
 //用户表
 @Entity()
@@ -9,7 +10,6 @@ export class Users {
   @PrimaryGeneratedColumn()
   user_id: number;
 
-  //唯一
   @PrimaryColumn()
   @Column({
     length: 18,
@@ -42,4 +42,7 @@ export class Users {
   @IsNotEmpty()
   @IsEmail()
   email: string;
+
+  @OneToMany(type => CommentsEntity, commentsEntity => commentsEntity.user_id)
+  comments: CommentsEntity[];
 }
