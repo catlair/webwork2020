@@ -1,21 +1,39 @@
 <!doctype html>
-<html lang="zh-CN">
+<html class="no-js" lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>管理员登录</title>
-  <script src="../js/vue.js"></script>
-  <script src="../js/element.js"></script>
-  <script src="../js/axios.js"></script>
-  <script src="./axios/index.js"></script>
-  <link rel="stylesheet" href="../css/element.css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+  <meta name="viewport" content="width=device-width,user-scalable=no, initial-scale=1">
+  <link rel="icon" type="image/png" href="/favicon.ico">
+  <title>科学养生网</title>
+  <link rel="stylesheet" href="css/swiper.min.css">
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+   <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/app_web.css">
+
+  <script type="text/javascript" src="js/jquery1.12.4.min.js"></script>
+  <script type="text/javascript" src="js/jquery.SuperSlide.2.1.3.js"></script>
+  <script type="text/javascript" src="js/swiper.min.js"></script>
+  <script type="text/javascript" src="js/bootstrap.min.js"></script>
+  <script src="js/vue.js"></script>
+  <script src="js/element.js"></script>
+  <script src="js/axios.js"></script>
+  <script src="js/axios/index.js"></script>
+  <link rel="stylesheet" href="css/element.css">
 </head>
+
 <body>
-<div class="login-wrap">
+<!--头部  -->
+<div class="header-wrap">
+  <common-header></common-header>
+</div>
+
+<div style="height: 300px;background-image: linear-gradient(#fbefe1, #ffffff);"></div>
+<div class="login-wrap" style="margin-top: -300px">
   <div class="ms-login">
-    <div class="ms-title">后台管理系统</div>
+    <div class="ms-title">欢迎回来</div>
     <el-form :model="param" :rules="rules" ref="login" label-width="0px" class="ms-content">
       <el-form-item prop="username">
         <el-input v-model="param.username" placeholder="username">
@@ -33,32 +51,26 @@
         </el-input>
       </el-form-item>
       <div class="login-btn">
-        <el-button type="primary" @click="submitForm()">登录</el-button>
+        <el-button type="primary" style="background-color: #e60202;border-color: #FFFFFF;" @click="submitForm()" >登录</el-button>
       </div>
-      <p class="login-tips">Tips : 用户名和密码随便填。</p>
+      <p class="login-tips">Tips : 请按要求填写</p>
     </el-form>
   </div>
 </div>
 <script>
-    const token = window.localStorage.getItem('token');
-    if (token?.includes('.')) {
-        _axios.post('/admin/auth').then(data => {
-            if (data === true) {
-                window.location.href = "./index.html"
-            }
-        }).catch(err => {})
-    }
     new Vue({
         el: '.login-wrap',
         data: function () {
             return {
                 param: {
-                    username: 'admin',
-                    password: '123456',
+                    username: '',
+                    password: '',
                 },
                 rules: {
-                    username: [{required: true, message: '请输入用户名', trigger: 'blur'}],
-                    password: [{required: true, message: '请输入密码', trigger: 'blur'}],
+                    username: [{required: true, message: '请输入用户名', trigger: 'blur'}
+                        , {min: 2, max: 18, message: '长度在 2 到 18 个字符', trigger: 'blur'}],
+                    password: [{required: true, message: '请输入密码', trigger: 'blur'},
+                        {min: 6, max: 18, message: '长度在 6 到 18 个字符', trigger: 'blur'}],
                 },
             };
         },
@@ -67,14 +79,14 @@
                 this.$refs.login.validate(async valid => {
                     if (valid) {
                         try {
-                            const {token, user_id} = await _axios.post('/admin/login', {
+                            const {token, user_id} = await _axios.post('/users/login', {
                                 username: this.param.username,
                                 password: this.param.password
                             })
                             this.$message.success('登录成功');
-                            localStorage.setItem('ms_username', this.param.username);
-                            localStorage.setItem('ms_token', token);
-                            localStorage.setItem('ms_user_id', user_id);
+                            localStorage.setItem('username', this.param.username);
+                            localStorage.setItem('token', token);
+                            localStorage.setItem('user_id', user_id);
                             window.location.href = "./index.html"
                         } catch (error) {
                             this.$message.error(error?.response?.data?.message);
@@ -97,8 +109,7 @@
     .login-wrap {
         position: relative;
         width: 100%;
-        height: 100vh;
-        background-image: url(./images/login-bg.jpg);
+        height: calc(100vh - 270px);
         background-size: 100%;
     }
 
@@ -107,7 +118,7 @@
         line-height: 50px;
         text-align: center;
         font-size: 20px;
-        color: #fff;
+        color: #8b3f3f;
         border-bottom: 1px solid #ddd;
     }
 
@@ -134,6 +145,7 @@
         width: 100%;
         height: 36px;
         margin-bottom: 10px;
+        outline: none;
     }
 
     .login-tips {
@@ -142,6 +154,15 @@
         color: #fff;
     }
 </style>
-
+<!-- footer -->
+<div class="footer-wrap">
+  <common-footer></common-footer>
+</div>
+<script src="common/index.js"></script>
+<script>
+    new Vue({el: '.header-wrap'})
+    new Vue({el: '.footer-wrap'})
+</script>
+<script src="./common/login.js"></script>
 </body>
 </html>

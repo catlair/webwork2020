@@ -8,8 +8,8 @@ window._axios = axios.create(config);
 //request拦截器
 _axios.interceptors.request.use(
     (config) => {
-        if (localStorage.getItem('token')) {
-            config.headers.Authorization = 'Bearer ' + localStorage.getItem('token');
+        if (localStorage.getItem('ms_token')) {
+            config.headers.Authorization = 'Bearer ' + localStorage.getItem('ms_token');
         }
         return config;
     },
@@ -26,7 +26,7 @@ _axios.interceptors.response.use(res => {
     return res;
 },err => {
     if (err.response?.status === 401){
-        localStorage.removeItem('token');
+        localStorage.removeItem('ms_token');
     }
     return Promise.reject(err);
 })

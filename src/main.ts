@@ -10,7 +10,7 @@ async function bootstrap() {
 
   app.enableCors({
     credentials: true,
-    origin: 'http://127.0.0.1:8080',
+    origin: '*',
   });
 
   const options = new DocumentBuilder()

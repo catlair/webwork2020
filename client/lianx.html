@@ -12,12 +12,88 @@
   <link rel="stylesheet" href="css/bootstrap.min.css">
   <link rel="stylesheet" href="css/app.css">
   <link rel="stylesheet" href="css/app_web.css">
+  <link rel="stylesheet" href="css/element.css">
 
   <script type="text/javascript" src="js/jquery1.12.4.min.js"></script>
   <script type="text/javascript" src="js/jquery.SuperSlide.2.1.3.js"></script>
   <script type="text/javascript" src="js/swiper.min.js"></script>
   <script type="text/javascript" src="js/bootstrap.min.js"></script>
   <script src="js/vue.js"></script>
+  <script src="js/element.js"></script>
+  <script src="js/axios.js"></script>
+  <script src="js/axios/index.js"></script>
+  <style>
+      .comment-item {
+          width: 1100px;
+          margin: 20px auto;
+          text-align: left;
+          padding: 10px 5px;
+          box-sizing: border-box;
+          position: relative;
+      }
+
+      .comment-item .user-info {
+          display: flex;
+      }
+
+      .comment-item .user-info .avatar-box {
+          width: 60px;
+          min-width: 60px;
+          height: 60px;
+      }
+
+      .comment-item .user-info .avatar-box img {
+          width: 100%;
+          border-radius: 50%;
+      }
+
+      .comment-item .user-info .other-info {
+          flex: 1;
+          padding-left: 10px;
+      }
+
+      .comment-item .user-info .other-info .user-name {
+          font-size: 22px;
+          line-height: 40px;
+          font-weight: bold;
+      }
+
+      .comment-item .user-info .other-info .create-time {
+          font-size: 14px;
+          line-height: 20px;
+      }
+
+      .comment-item .comment-content {
+          padding: 10px 5px;
+          font-size: 14px;
+          word-break: break-all;
+      }
+
+      .comment-item .del-box {
+          position: absolute;
+          right: 0;
+          top: 0;
+          height: 100%;
+          width: 50px;
+          font-size: 18px;
+          background-color: rgba(245, 108, 108, 0.8);
+          color: #fff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 0 5px #ccc;
+      }
+
+      .comment-item .del-box .del-btn {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          width: 100%;
+          height: 100%;
+          cursor: pointer;
+      }
+
+  </style>
 </head>
 
 <body>
@@ -30,24 +106,41 @@
 <div class="jiam_tjiul">
   <img src="images/liangxi_wom.jpg" alt="">
 </div>
-<div class="lianxi_wom px1200" style="height: 350px">
+<div id="app" class="lianxi_wom px1200">
   <div class="lianxi_lik">
-    <h2>联系我们<span><b>·</b><i>Contact us</i></span></h2>
+    <h2>留言评论<span><b>·</b><i>Comments</i></span></h2>
     <div class="xiam_biaod">
       <div class="fank_left">
         <h3>留言反馈</h3>
-        <input type="text" placeholder="您的名字">
-        <input type="text" placeholder="您的联系电话">
-        <textarea placeholder="写下您意见或者建议"></textarea>
-        <button>提交</button>
+        <textarea v-model="content" placeholder="写下您意见或者建议"></textarea>
+        <button @click="handleBtn" :disabled="!username">{{username ? '提交' : '登录才能评论哦'}}</button>
       </div>
-      <div class="right_lx">
-        <p>工程业务销售服务热线：<br>
-          <em>XXX</em>
-        </p>
-        <p>我们的工作时间：<br>
-          <em>09:00 - 18:00</em>
-        </p>
+    </div>
+    <div class="comment-item" v-for="comment in comments">
+      <div class="user-info">
+        <div class="other-info">
+          <p class="user-name">{{comment.user?.username}}<span style="padding-left: 100px "></span>
+            <span style="color: #1b6d85;font-size: 12px" class="create-time">{{formatTime(comment.created_time)}}</span>
+          </p>
+        </div>
+      </div>
+      <div class="comment-content">
+        <span v-if="comment.isVerify === 0" style="color: #c0392b;font-size: 14px">【仅自己可见】</span>
+        <span v-text="comment.content"></span>
+      </div>
+      <div class="del-box" v-show="comment.user_id === +user_id">
+        <el-popconfirm
+                confirm-button-text='好的'
+                cancel-button-text='不用了'
+                icon="el-icon-info"
+                icon-color="red"
+                @confirm="confirmHandle()"
+                @cancel="cancelHandle()"
+                title="确定删除这一条留言吗？"
+                style="height: 100%;width: 50px;"
+        >
+          <span class="del-btn" slot="reference" @click="deleteLeave(comment.id)">删除</span>
+        </el-popconfirm>
       </div>
     </div>
   </div>
@@ -58,9 +151,95 @@
 </div>
 <script src="common/index.js"></script>
 <script>
-    new Vue({el:'.header-wrap'})
-    new Vue({el:'.footer-wrap'})
-</script>
+    new Vue({el: '.header-wrap'})
+    new Vue({el: '.footer-wrap'})
 
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+                username: '',
+                deleteId: '',
+                user_id: 0,
+                content: '',
+                comments: []
+            }
+        },
+        async created() {
+            this.username = window.localStorage.getItem('username')
+            this.user_id = window.localStorage.getItem('user_id')
+            await this.getComments()
+        },
+        methods: {
+            setHeight() {
+                const lianxiLikHeight = 130 + this.comments.length * 130;
+
+
+                document.querySelector('.lianxi_wom.px1200').style.height = lianxiLikHeight + 'px'
+            },
+            async getComments() {
+                try {
+                    const data = await _axios.get('comments');
+                    this.comments = data.filter(el => el.isVerify || el.user_id === +this.user_id);
+                    this.setHeight();
+                } catch (err) {
+                }
+            },
+            async handleBtn() {
+                if (this.content.trim() === '') {
+                    this.$message.info('未输入内容');
+                    return
+                }
+                try {
+                    await _axios.post(`/comments`, {
+                        content: this.content
+                    })
+                    this.content = '';
+                    await this.getComments()
+                    this.$message.success('留言成功,管理员审核后才能显示');
+                } catch (error) {
+                    this.$message.error(error?.response?.data?.message);
+                }
+            },
+            deleteLeave(id) {
+                this.deleteId = id;
+            },
+            async confirmHandle() {
+                try {
+                    await _axios.delete(`/comments/${this.deleteId}`)
+                    await this.getComments()
+                } catch (err) {
+                    this.$message({
+                        type: 'error',
+                        message: err.response?.data?.message || '删除失败'
+                    });
+                    return;
+                }
+                this.$message({
+                    type: 'success',
+                    message: '删除成功!'
+                });
+            },
+            cancelHandle() {
+                this.deleteId = '';
+                this.$message({
+                    type: 'info',
+                    message: '已取消删除'
+                });
+            },
+            formatTime(time) {
+                const time1 = time.substring(0, 10);
+                let time2 = +time.substring(11, 13) - 8;
+                time2 = time2 >= 0 ? time2 : (time2 + 24)
+                time2 = time2.toString()
+                time2 = time2.length === 1 ? '0' + time2 : time2;
+                const time3 = time.substring(13, 19);
+                return time1 + ' ' + time2 + time3
+            }
+        }
+    })
+
+</script>
+<script src="./common/login.js"></script>
 </body>
 </html>

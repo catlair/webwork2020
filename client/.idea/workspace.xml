@@ -17,13 +17,15 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/js" />
+    <property name="com.intellij.ide.scratch.LRUPopupBuilder$1/设置语言" value="ECMAScript 6&#10;Vue" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/admin" />
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
     <property name="vue.rearranger.settings.migration" value="true" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\Users\Desktop\mb\admin" />
       <recent name="D:\Users\Desktop\mb\js" />
       <recent name="D:\Users\Desktop\mb\css" />
       <recent name="D:\Users\Desktop\mb" />
@@ -51,7 +53,10 @@
       <workItem from="1609684503935" duration="2192000" />
       <workItem from="1609726764611" duration="10834000" />
       <workItem from="1609740259333" duration="9735000" />
-      <workItem from="1609753489569" duration="4518000" />
+      <workItem from="1609753489569" duration="10842000" />
+      <workItem from="1609805750717" duration="4454000" />
+      <workItem from="1609811828346" duration="10785000" />
+      <workItem from="1609826170123" duration="2204000" />
     </task>
     <servers />
   </component>

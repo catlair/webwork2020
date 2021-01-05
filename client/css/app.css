@@ -1493,9 +1493,9 @@ line-height:40px;
 
 }
 .lianxi_lik .xiam_biaod .fank_left{
-  width: 615px;
+  width: 1141px;
   float: left;
-  overflow: hidden;
+  /*overflow: hidden;*/
   padding-bottom: 30px;
 }
 

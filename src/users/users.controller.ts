@@ -5,12 +5,12 @@ import {
   Get,
   Param,
   Post,
-  Put, UnauthorizedException,
+  Put,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-// import {UniqueExceptionFilter} from "../unique.filter";
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './users.decorator';
@@ -18,15 +18,13 @@ import { AuthGuard } from '@nestjs/passport';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dto/login.dto';
 
-
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
   constructor(
     private readonly userService: UsersService,
     private readonly jwtService: JwtService,
-  ) {
-  }
+  ) {}
 
   @Get('')
   @ApiOperation({ summary: '获取所有用户信息' })
@@ -45,7 +43,7 @@ export class UsersController {
   @ApiBearerAuth()
   async findOneById(
     @Param('id')
-      id: number,
+    id: number,
     @User() user,
   ) {
     if (user.user_id === 1 || user.user_id === +id) {
@@ -60,9 +58,9 @@ export class UsersController {
   @ApiBearerAuth()
   async update(
     @Param('id')
-      id: number,
+    id: number,
     @Body()
-      updateUserDto: UpdateUserDto,
+    updateUserDto: UpdateUserDto,
     @User() user,
   ) {
     if (user.user_id === 1 || user.user_id === +id) {
@@ -77,7 +75,7 @@ export class UsersController {
   @ApiOperation({ summary: '删除一个用户' })
   async remove(
     @Param('id')
-      id: number,
+    id: number,
     @User() user,
   ) {
     if (user.user_id === 1 || user.user_id === +id) {

@@ -1,6 +1,11 @@
 Vue.component('common-header', {
     template: `
- <nav class="navbar navbar-inverse navbar-fixed-top app_top_b">
+ <nav class="navbar navbar-inverse navbar-fixed-top app_top_b" style="position: relative">
+  <div class="index-login-wrap" style="position: absolute;right: 20px;top:140px;color: #00a2e5">
+    <a href="./login.html">登录</a>
+    <span>&nbsp;&nbsp;|&nbsp;&nbsp;</span>
+    <a href="./reg.html">注册</a>
+  </div>
   <div class="container">
     <div class="navbar-header">
     <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
@@ -9,7 +14,7 @@ Vue.component('common-header', {
       <span class="icon-bar"></span>
       <span class="icon-bar"></span>
     </button>
-    <a class="navbar-brand" href="index.html"><img src="images/logo.png" alt=""></a>
+    <a class="navbar-brand" href="../index.html"><img src="../images/logo.png" alt=""></a>
     </div>
     <div id="navbar" class="collapse navbar-collapse">
     <ul class="nav navbar-nav"> 
@@ -29,7 +34,7 @@ Vue.component('common-header', {
                 ['养生食材', 'ysshicai'],
                 ['运动养生', 'ydys'],
                 ['养生哲学', 'zhexue'],
-                ['给我留言', 'lianx']],
+                ['给我留言', 'lianx']]
         }
     },
     methods: {
